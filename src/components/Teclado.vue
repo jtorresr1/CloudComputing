@@ -22,9 +22,12 @@
                             <input type="file" ref="input1" style="display: none" @change="previewImage" accept="image/*" >                
                         </div>
                         <br>
-                        <div v-if="imageData!=null">                     
-                            <img class="preview" height="150" width="150" :src="img1">
-                        </div>  
+
+                        <div v-if="imageData!=null">
+                            <img class="preview" width="150px" height="150px" :src="img1">
+                            <br>
+                            <v-btn @click="onUpload">Upload</v-btn>
+                        </div>
                         <br> 
                         <button type="submit" class="btn btn-primary"> Guardar </button>
                     
@@ -66,6 +69,7 @@
 
 import firebase from '../firebase'
 import 'firebase/firestore'
+import 'firebase/storage';
 
 
 let db = firebase.firestore();
@@ -81,6 +85,7 @@ export default {
                 Modelo:'',
                 Tipo:'',
                 Precio:'',
+                Imagen:'',
             },
 
             data_teclado : [],
@@ -102,6 +107,7 @@ export default {
         this.newKeyboard.Modelo = '';
         this.newKeyboard.Tipo = '';
         this.newKeyboard.Precio = '';
+        this.newKeyboard.Imagen = '';
         this.readTeclados();
         },
 
@@ -134,7 +140,6 @@ export default {
             this.uploadValue=0;
             this.img1=null;
             this.imageData = event.target.files[0];
-            this.onUpload()
         },
 
         onUpload(){
@@ -146,10 +151,12 @@ export default {
             ()=>{this.uploadValue=100;
                 storageRef.snapshot.ref.getDownloadURL().then((url)=>{
                     this.img1 =url;
+                    this.newKeyboard.Imagen = url;
                     console.log(this.img1)
                     });
                 }      
                 );
+
         },
     },
 

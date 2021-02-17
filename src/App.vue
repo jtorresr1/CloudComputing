@@ -35,15 +35,15 @@
                     <i>{{email}}</i>
                   </div>
                   <div class="list-item">
-                    <i>{{personalID}}</i>
+                    <i id="id_usuario_actual">{{personalID}}</i>
                   </div>
                 </div>
                 <br><br>
                 <ul>
-                  <li> <button v-on:click="view_home"> Inicio </button> </li>
-                  <li> <button v-on:click="view_mouse"> Mouse </button> </li>
-                  <li> <button v-on:click="view_teclado"> Teclados </button> </li>
-                  <li> <a href=""> Catalogo </a> </li>
+                  <li> <v-btn v-on:click="view_home" class="bg-warning"> Inicio </v-btn> </li>
+                  <li> <v-btn v-on:click="view_mouse"> Mouse </v-btn> </li>
+                  <li> <v-btn v-on:click="view_teclado"> Teclados </v-btn> </li>
+                  <li> <v-btn v-on:click="view_catalogo"> Catalogo </v-btn> </li>
                 </ul>
             </div>
 
@@ -53,37 +53,8 @@
                 <br>
                 <component v-bind:is="component" />
                 <br><br><br>
-                <div class="row">
-                  
-
-                  <div class="col-sm-2">
-
-                  </div>
-                  
-                  <!--<div class="col-sm-6">
-                      <table class="table table-striped table-bordered">
-                        <thead>
-                          <tr>
-                            <th>Marca</th>
-                            <th>Modelo</th>
-                            <th>Sensibilidad</th>
-                            <th>Precio</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(m, index) in data_mouse" :key="index">
-                              <td>{{m.Marca}}</td>
-                              <td>{{m.Modelo}}</td>
-                              <td>{{m.Sensibilidad}}</td>
-                              <td>{{m.Precio}}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                  </div>-->
-
-                </div> 
-
                 
+
               </div>
             </div>
           </div>   
@@ -107,7 +78,11 @@ import facebookLogin from 'facebook-login-vuejs'
 import Dashboard from "./components/Dashboard.vue";
 import Mouse from './components/Mouse';
 import Teclado from './components/Teclado';
-
+import Catalogo from './components/Catalogo';
+import FileSaver from 'file-saver';
+import 'firebase/storage';
+import firebase from './firebase';
+import 'firebase/firestore';
 
 
 export default {
@@ -128,7 +103,8 @@ export default {
     facebookLogin,
     Dashboard,
     Mouse,
-    Teclado
+    Teclado,
+    Catalogo
   },
 
   methods: {
@@ -149,10 +125,27 @@ export default {
     },
     onLogin() {
       this.isConnected = true
+      this.$data_interacciones = [];
       this.getUserData()
     },
     onLogout() {
+      
+      this.datos_send();
       this.isConnected = false;
+      
+      
+    },
+
+    datos_send()
+    {
+      let extra = this.$data_interacciones;
+      const archivo = document.getElementById('id_usuario_actual').textContent + "_"+Date.now()+ ".txt";
+      console.log(extra);
+      var blob = new Blob([extra], {type: "text/plain;charset=utf-8"});
+      firebase.storage().ref(archivo).put(blob).then(function(snapshot) {
+        console.log(snapshot);
+      });
+      FileSaver.saveAs(blob, archivo);
     },
 
     view_mouse()
@@ -168,6 +161,17 @@ export default {
     view_home()
     {
       this.component = "Dashboard"
+    },
+
+    view_catalogo()
+    {
+      const usuario = document.getElementById('id_usuario_actual').textContent;
+      const fecha = Date.now();
+      const action = "Ver Mouses";
+      const data_save = usuario+ ";" + action + ";" + " " +";"+ fecha+"\n";
+      
+      this.component = "Catalogo"
+      this.$data_interacciones.push(data_save);
     },
 
 

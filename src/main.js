@@ -20,8 +20,13 @@ import { firestorePlugin } from 'vuefire';
 Vue.use(firestorePlugin);
 
 import router from './router';
+import vuetify from './plugins/vuetify';
+
+Vue.prototype.$data_interacciones = [];
+
 
 new Vue({
   router,
-  render: h => h(App),
+  vuetify,
+  render: h => h(App)
 }).$mount('#app')

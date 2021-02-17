@@ -13,6 +13,19 @@
                         <input type="text" class="form-control" v-model="newMouse.Modelo" placeholder="Modelo">
                         <input type="number" class="form-control" v-model="newMouse.Sensibilidad" placeholder="Sensibilidad">
                         <input type="number" class="form-control" v-model="newMouse.Precio" placeholder="Precio">
+                        <br>
+                        <div >
+                            <v-btn @click="click1">Imagen del producto</v-btn>
+                            <input type="file" ref="input1" style="display: none" @change="previewImage" accept="image/*" >                
+                        </div>
+                        <br>
+
+                        <div v-if="imageData!=null">
+                            <img class="preview" width="150px" height="150px" :src="img1">
+                            <br>
+                            <v-btn @click="onUpload">Upload</v-btn>
+                        </div>
+                        <br> 
                         <button type="submit" class="btn btn-primary"> Guardar </button>
                     
                     </div>
@@ -43,7 +56,6 @@
                     </tbody>
                 </table>
             </div>         
-            <button v-on:click="check">check</button>
         </div>
 </template>
 
@@ -51,6 +63,7 @@
 
 import firebase from '../firebase'
 import 'firebase/firestore'
+import 'firebase/storage';
 
 
 let db = firebase.firestore();
@@ -66,8 +79,11 @@ export default {
                 Modelo:'',
                 Sensibilidad:'',
                 Precio:'',
+                Imagen:'',
             },
-
+            caption : '',
+            img1: '',
+            imageData: null,
             data_mouse : [],
         }
     },
@@ -84,6 +100,7 @@ export default {
         this.newMouse.Modelo = '';
         this.newMouse.Sensibilidad = '';
         this.newMouse.Precio = '';
+        this.newMouse.Imagen = '';
 
         this.readMouses();
         },
@@ -110,9 +127,32 @@ export default {
             
         },
 
-        check(){
-            console.log(this.data_mouse);
-        }
+        click1() {
+            this.$refs.input1.click()   
+        },
+
+        previewImage(event) {
+            this.uploadValue=0;
+            this.img1=null;
+            this.imageData = event.target.files[0];
+        },
+
+        onUpload(){
+            this.img1=null;
+            const storageRef=firebase.storage().ref(`${this.imageData.name}`).put(this.imageData);
+            storageRef.on(`state_changed`,snapshot=>{
+            this.uploadValue = (snapshot.bytesTransferred/snapshot.totalBytes)*100;
+                }, error=>{console.log(error.message)},
+            ()=>{this.uploadValue=100;
+                storageRef.snapshot.ref.getDownloadURL().then((url)=>{
+                    this.img1 =url;
+                    this.newMouse.Imagen = url;
+                    console.log(this.img1)
+                    });
+                }      
+                );
+
+        },
 
        
     }, 
